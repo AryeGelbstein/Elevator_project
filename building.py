@@ -4,6 +4,9 @@ from elevator import *
 
 
 def calculate_time_by_distance(src, dest):
+    # Calculates the estimated travel time for an elevator between two floors.
+    # The time is based on the absolute distance between floors, the floor height, and the elevator's speed per floor.
+
     distance = abs(src - dest)
     return (distance / FLOOR_HEIGHT) * ELEVATOR_TRAVEL_TIME_PER_FLOOR
 
@@ -11,6 +14,9 @@ def calculate_time_by_distance(src, dest):
 class Building:
 
     def __init__(self, num_of_floors, num_of_elevators, world):
+        # Represents a building with multiple floors and elevators.
+        # Initializes the floors and elevators, setting their initial positions within the given world.
+
         self.floors = [Floor(i) for i in range(num_of_floors)]
         elevator_initial_y = world.get_height() - MARGIN - FLOOR_HEIGHT
         self.elevators = [Elevator(i, elevator_initial_y, self.elevator_arrived_at) for i in range(num_of_elevators)]
@@ -20,6 +26,9 @@ class Building:
 
 
     def draw(self):
+        # Draws the building, including all floors and elevators.
+        # Loads floor and elevator images, scales them, and renders them on the screen.
+
         floor_image = pygame.image.load(FLOOR_IMAGE_PATH)
         floor_image = pygame.transform.scale(floor_image, (FLOOR_WIDTH, FLOOR_HEIGHT))
         elevator_image = pygame.image.load(ELEVATOR_IMAGE_PATH)
@@ -34,15 +43,16 @@ class Building:
 
 
     def elevator_arrived_at(self, level):
+        # Marks the elevator arrival at a specific floor.
+        # Resets the button press state for the given floor.
+
         self.floors[level].button_pressed = False
 
-    # def floor_under_treatment(self, dest_y):
-    #     if any(dest_y in elevator.queue
-    #            or dest_y == elevator.current_dest_y
-    #            for elevator in self.elevators):
-    #         return True
 
     def assign_elevator(self, floor):
+        # Assigns the best available elevator to a requested floor.
+        # Calculates the estimated arrival time for each elevator and selects the one with the shortest time.
+
         world_height = self.world.get_height()
         dest_y = world_height - (floor + 1) * FLOOR_HEIGHT - MARGIN
 
@@ -58,10 +68,14 @@ class Building:
             if arrival_time < best_arrival_time:
                 best_arrival_time = arrival_time
                 best_elevator = elevator
-        best_elevator.add_task(floor, dest_y, best_arrival_time + 2)
+        best_elevator.add_task(floor, dest_y, best_arrival_time + ELEVATOR_STOPPING_TIME_AT_FLOOR)
 
 
     def update(self, pos):
+        # Updates the state of the building based on user input and elevator movements.
+        # Checks if a floor button was pressed and assigns an elevator accordingly.
+        # Updates the location of all elevators in the building.
+
         if pos:
             for floor in self.floors:
                 x, y = pos
